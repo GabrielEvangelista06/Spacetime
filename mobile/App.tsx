@@ -8,14 +8,23 @@ import {
 } from '@expo-google-fonts/roboto'
 
 import { BaiJamjuree_700Bold } from '@expo-google-fonts/bai-jamjuree'
-import React from 'react'
+import React, { useEffect } from 'react'
 
+import { makeRedirectUri, useAuthRequest } from 'expo-auth-session'
 import { styled } from 'nativewind'
 import blurBg from './src/assets/bg-blur.png'
 import Logo from './src/assets/spacetime-logo.svg'
 import Stripes from './src/assets/stripes.svg'
+import { api } from './src/lib/api'
 
 const StyledStripes = styled(Stripes)
+
+const discovery = {
+  authorizationEndpoint: 'https://github.com/login/oauth/authorize',
+  tokenEndpoint: 'https://github.com/login/oauth/access_token',
+  revocationEndpoint:
+    'https://github.com/settings/connections/applications/28f83a53d85f9fe15381',
+}
 
 export default function App() {
   const [hasLoadedFonts] = useFonts({
@@ -23,6 +32,39 @@ export default function App() {
     Roboto_700Bold,
     BaiJamjuree_700Bold,
   })
+
+  const [request, response, signInWithGithub] = useAuthRequest(
+    {
+      clientId: '28f83a53d85f9fe15381',
+      scopes: ['identity'],
+      redirectUri: makeRedirectUri({
+        scheme: 'spacetime',
+      }),
+    },
+    discovery,
+  )
+
+  useEffect(() => {
+    console.log(
+      makeRedirectUri({
+        scheme: 'spacetime',
+      }),
+    )
+
+    if (response?.type === 'success') {
+      const { code } = response.params
+
+      api
+        .post('/register', {
+          code,
+        })
+        .then((response) => {
+          const { token } = response.data
+
+          console.log(token)
+        })
+    }
+  }, [response])
 
   if (!hasLoadedFonts) {
     return null
@@ -52,6 +94,7 @@ export default function App() {
         <TouchableOpacity
           activeOpacity={0.7}
           className="rounded-full bg-green-500 px-5 py-3"
+          onPress={() => signInWithGithub()}
         >
           <Text className="font-alt text-sm uppercase text-black">
             Cadastrar lembrança
