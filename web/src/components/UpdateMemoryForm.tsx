@@ -4,7 +4,7 @@ import { api } from '@/lib/api'
 import { Camera } from 'lucide-react'
 import Image from 'next/image'
 import { useParams, useRouter } from 'next/navigation'
-import React, { FormEvent, useEffect, useState } from 'react'
+import { FormEvent, useEffect, useState } from 'react'
 import { EmptyMemories } from './EmptyMemories'
 import MediaPicker from './MediaPicker'
 
@@ -26,7 +26,6 @@ export default function UpdateMemoryForm(props: UpdateMemoryFormProps) {
   const [coverUrl, setCoverUrl] = useState<string | undefined>('')
   const [isPublic, setIsPublic] = useState<boolean>(false)
   const [content, setContent] = useState<string>('')
-  const [selectedImage, setSelectedImage] = useState<File | undefined>(null)
 
   useEffect(() => {
     const fetchRecord = async () => {
@@ -94,11 +93,6 @@ export default function UpdateMemoryForm(props: UpdateMemoryFormProps) {
 
   if (!memory) {
     return <EmptyMemories />
-  }
-
-  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    setSelectedImage(file)
   }
 
   return (
