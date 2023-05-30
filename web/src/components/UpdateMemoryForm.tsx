@@ -4,7 +4,7 @@ import { api } from '@/lib/api'
 import { Camera } from 'lucide-react'
 import Image from 'next/image'
 import { useParams, useRouter } from 'next/navigation'
-import { FormEvent, useEffect, useState } from 'react'
+import { ChangeEvent, FormEvent, useEffect, useState } from 'react'
 import { EmptyMemories } from './EmptyMemories'
 import MediaPicker from './MediaPicker'
 
@@ -66,6 +66,8 @@ export default function UpdateMemoryForm(props: UpdateMemoryFormProps) {
       const uploadResponse = await api.post('/upload', uploadFormData)
 
       newCoverUrl = uploadResponse.data.fileUrl
+
+      setCoverUrl(newCoverUrl)
     }
 
     const data: Memory = { id, isPublic, content }
@@ -89,6 +91,19 @@ export default function UpdateMemoryForm(props: UpdateMemoryFormProps) {
     } catch (error) {
       console.error('Erro ao atualizar o registro:', error)
     }
+  }
+
+  function handleFileSelected(event: ChangeEvent<HTMLInputElement>) {
+    const { files } = event.target
+
+    if (!files || files.length === 0) {
+      return
+    }
+
+    const file = files[0]
+    const previewURL = URL.createObjectURL(file)
+
+    setCoverUrl(previewURL)
   }
 
   if (!memory) {
@@ -124,7 +139,7 @@ export default function UpdateMemoryForm(props: UpdateMemoryFormProps) {
         </label>
       </div>
 
-      <MediaPicker />
+      <MediaPicker onFileSelected={handleFileSelected} />
 
       {coverUrl ? (
         <Image
