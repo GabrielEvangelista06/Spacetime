@@ -1,3 +1,4 @@
+import { Memory } from '@prisma/client'
 import { FastifyInstance } from 'fastify'
 import { z } from 'zod'
 import { prisma } from './../lib/prisma'
@@ -77,7 +78,7 @@ export async function memoriesRoutes(app: FastifyInstance) {
 
     const bodySchema = z.object({
       content: z.string(),
-      coverUrl: z.string(),
+      coverUrl: z.string().optional(),
       isPublic: z.coerce.boolean().default(false),
     })
 
@@ -93,15 +94,21 @@ export async function memoriesRoutes(app: FastifyInstance) {
       return reply.status(401).send()
     }
 
+    const updatedMemoryData: Partial<Memory> = {
+      content,
+      isPublic,
+    }
+
+    // Verifique se o coverUrl foi fornecido no corpo da solicitação
+    if (coverUrl !== undefined && coverUrl !== memory.coverUrl) {
+      updatedMemoryData.coverUrl = coverUrl
+    }
+
     memory = await prisma.memory.update({
       where: {
         id,
       },
-      data: {
-        content,
-        coverUrl,
-        isPublic,
-      },
+      data: updatedMemoryData,
     })
 
     return memory
