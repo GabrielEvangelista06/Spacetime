@@ -3,12 +3,14 @@
 import { api } from '@/lib/api'
 import Cookie from 'js-cookie'
 import { Camera } from 'lucide-react'
+import Image from 'next/image'
 import { useRouter } from 'next/navigation'
-import { FormEvent } from 'react'
+import React, { FormEvent, useState } from 'react'
 import MediaPicker from './MediaPicker'
 
 export default function NewMemoryForm() {
   const router = useRouter()
+  const [coverUrl, setCoverUrl] = useState<string>('')
 
   async function handleCreateMemory(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -19,7 +21,7 @@ export default function NewMemoryForm() {
 
     let coverUrl = ''
 
-    if (fileToUpload) {
+    if (fileToUpload instanceof File && fileToUpload.size > 0) {
       const uploadFormData = new FormData()
       uploadFormData.set('file', fileToUpload)
 
@@ -45,6 +47,19 @@ export default function NewMemoryForm() {
     )
 
     router.push('/')
+  }
+
+  function handleFileSelected(event: React.ChangeEvent<HTMLInputElement>) {
+    const { files } = event.target
+
+    if (!files || files.length === 0) {
+      return
+    }
+
+    const file = files[0]
+    const previewURL = URL.createObjectURL(file)
+
+    setCoverUrl(previewURL)
   }
 
   return (
@@ -73,7 +88,17 @@ export default function NewMemoryForm() {
         </label>
       </div>
 
-      <MediaPicker />
+      <MediaPicker onFileSelected={handleFileSelected} />
+
+      {coverUrl && (
+        <Image
+          src={coverUrl}
+          width={592}
+          height={280}
+          className="aspect-video w-full rounded-lg object-cover"
+          alt=""
+        />
+      )}
 
       <textarea
         name="content"
